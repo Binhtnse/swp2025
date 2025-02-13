@@ -14,16 +14,26 @@ const Header = () => {
       label: <Link to="/support-programs" className="!text-white hover:!text-primary">Các chương trình hỗ trợ</Link>,
     },
     {
-      key: 'experts',
-      label: <Link to="/experts" className="!text-white hover:!text-primary">Danh sách chuyên gia tâm lí</Link>,
+      key: 'psychologist-list',
+      label: <Link to="/psychologist-list" className="!text-white hover:!text-primary">Danh sách chuyên gia tâm lí</Link>,
     },
     {
       key: 'resources',
       label: <Link to="/resources" className="!text-white hover:!text-primary">Tài nguyên</Link>,
+      children: [
+        {
+          key: 'blog',
+          label: <Link to="/resources/blog" className="!text-black hover:!text-primary">Blog</Link>,
+        },
+        {
+          key: 'documents',
+          label: <Link to="/resources/documents" className="!text-black hover:!text-primary">Tài liệu</Link>,
+        },
+      ],
     },
     {
-      key: 'auth',
-      label: <Link to="/auth" className="!text-white hover:!text-primary">Đăng nhập/Đăng kí</Link>,
+      key: 'login',
+      label: <Link to="/login" className="!text-white hover:!text-primary">Đăng nhập/Đăng kí</Link>,
     },
   ];
 
