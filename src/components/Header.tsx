@@ -10,8 +10,8 @@ const Header = () => {
       label: <Link to="/surveys" className="!text-white hover:!text-primary">Các bài khảo sát</Link>,
     },
     {
-      key: 'support',
-      label: <Link to="/support-programs" className="!text-white hover:!text-primary">Các chương trình hỗ trợ</Link>,
+      key: 'support-program-list',
+      label: <Link to="/support-program-list" className="!text-white hover:!text-primary">Các chương trình hỗ trợ</Link>,
     },
     {
       key: 'psychologist-list',

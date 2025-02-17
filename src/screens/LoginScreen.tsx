@@ -1,10 +1,20 @@
 import React, { useState } from "react";
-import { Form, Input, Button, Typography, message, Modal } from "antd";
-import { UserOutlined, LockOutlined } from "@ant-design/icons";
+import {
+  Form,
+  Input,
+  Button,
+  Typography,
+  message,
+  Modal,
+  Tabs,
+  Radio,
+} from "antd";
+import { UserOutlined, LockOutlined, MailOutlined } from "@ant-design/icons";
 import { Image } from "antd";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useAuthState } from "../hooks/useAuthState";
+import TabPane from "antd/es/tabs/TabPane";
 
 const { Title } = Typography;
 
@@ -15,6 +25,7 @@ const LoginScreen: React.FC = () => {
   const [isResetFormVisible, setIsResetFormVisible] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [resetForm] = Form.useForm();
+  const [registerForm] = Form.useForm();
 
   const handlePasswordReset = async () => {
     try {
@@ -33,6 +44,30 @@ const LoginScreen: React.FC = () => {
       message.error(
         "Không thể gửi yêu cầu đặt lại mật khẩu. Vui lòng thử lại!"
       );
+    }
+  };
+
+  const handleRegister = async (values: {
+    username: string;
+    email: string;
+    password: string;
+    confirmPassword: string;
+  }) => {
+    try {
+      const response = await axios.post(
+        "https://sep490-backend-production.up.railway.app/api/v1/user/register",
+        {
+          username: values.username,
+          email: values.email,
+          password: values.password,
+        }
+      );
+      console.log(response);
+      message.success("Đăng ký thành công!");
+      registerForm.resetFields();
+    } catch (error) {
+      console.error("Registration failed:", error);
+      message.error("Đăng ký thất bại. Vui lòng thử lại!");
     }
   };
 
@@ -102,6 +137,106 @@ const LoginScreen: React.FC = () => {
     }
   };
 
+  const renderLoginForm = () => (
+    <Form
+      name="login"
+      initialValues={{ remember: true }}
+      onFinish={onFinish}
+      layout="vertical"
+    >
+      <Form.Item
+        name="account"
+        rules={[{ required: true, message: "Vui lòng nhập tên tài khoản!" }]}
+      >
+        <Input prefix={<UserOutlined />} placeholder="Tên tài khoản" />
+      </Form.Item>
+      <Form.Item
+        name="password"
+        rules={[{ required: true, message: "Vui lòng nhập mật khẩu!" }]}
+        className="mb-1"
+      >
+        <Input.Password prefix={<LockOutlined />} placeholder="Mật khẩu" />
+      </Form.Item>
+      <div className="text-right mb-6">
+        <a onClick={() => setIsModalVisible(true)}>Quên mật khẩu?</a>
+      </div>
+      <Form.Item>
+        <Button type="primary" htmlType="submit" className="w-full">
+          Đăng nhập
+        </Button>
+      </Form.Item>
+    </Form>
+  );
+
+  const renderRegisterForm = () => (
+    <Form
+      form={registerForm}
+      name="register"
+      onFinish={handleRegister}
+      layout="vertical"
+    >
+      <Form.Item
+        name="role"
+        rules={[{ required: true, message: "Vui lòng chọn loại tài khoản!" }]}
+      >
+        <Radio.Group>
+          <Radio.Button value="student">Học sinh</Radio.Button>
+          <Radio.Button value="parent">Phụ huynh</Radio.Button>
+        </Radio.Group>
+      </Form.Item>
+      <Form.Item
+        name="username"
+        rules={[{ required: true, message: "Vui lòng nhập tên tài khoản!" }]}
+      >
+        <Input prefix={<UserOutlined />} placeholder="Tên tài khoản" />
+      </Form.Item>
+
+      <Form.Item
+        name="email"
+        rules={[
+          { required: true, message: "Vui lòng nhập email!" },
+          { type: "email", message: "Email không hợp lệ!" },
+        ]}
+      >
+        <Input prefix={<MailOutlined />} placeholder="Email" />
+      </Form.Item>
+
+      <Form.Item
+        name="password"
+        rules={[{ required: true, message: "Vui lòng nhập mật khẩu!" }]}
+      >
+        <Input.Password prefix={<LockOutlined />} placeholder="Mật khẩu" />
+      </Form.Item>
+
+      <Form.Item
+        name="confirmPassword"
+        dependencies={["password"]}
+        rules={[
+          { required: true, message: "Vui lòng xác nhận mật khẩu!" },
+          ({ getFieldValue }) => ({
+            validator(_, value) {
+              if (!value || getFieldValue("password") === value) {
+                return Promise.resolve();
+              }
+              return Promise.reject(new Error("Mật khẩu xác nhận không khớp!"));
+            },
+          }),
+        ]}
+      >
+        <Input.Password
+          prefix={<LockOutlined />}
+          placeholder="Xác nhận mật khẩu"
+        />
+      </Form.Item>
+
+      <Form.Item>
+        <Button type="primary" htmlType="submit" className="w-full">
+          Đăng ký
+        </Button>
+      </Form.Item>
+    </Form>
+  );
+
   return (
     <div className="flex flex-col md:flex-row h-screen">
       <div className="w-full md:w-1/2">
@@ -115,41 +250,16 @@ const LoginScreen: React.FC = () => {
       <div className="w-full md:w-1/2 flex items-center justify-center bg-white p-4">
         <div className="w-full max-w-md">
           <Title level={2} className="text-center mb-8">
-            Đăng nhập
+            Chào mừng
           </Title>
-          <Form
-            name="login"
-            initialValues={{ remember: true }}
-            onFinish={onFinish}
-            layout="vertical"
-          >
-            <Form.Item
-              name="account"
-              rules={[
-                { required: true, message: "Vui lòng nhập tên tài khoản!" },
-              ]}
-            >
-              <Input prefix={<UserOutlined />} placeholder="Tên tài khoản" />
-            </Form.Item>
-            <Form.Item
-              name="password"
-              rules={[{ required: true, message: "Vui lòng nhập mật khẩu!" }]}
-              className="mb-1"
-            >
-              <Input.Password
-                prefix={<LockOutlined />}
-                placeholder="Mật khẩu"
-              />
-            </Form.Item>
-            <div className="text-right mb-6">
-              <a onClick={() => setIsModalVisible(true)}>Quên mật khẩu?</a>
-            </div>
-            <Form.Item>
-              <Button type="primary" htmlType="submit" className="w-full">
-                Đăng nhập
-              </Button>
-            </Form.Item>
-          </Form>
+          <Tabs defaultActiveKey="login" centered>
+            <TabPane tab="Đăng nhập" key="login">
+              {renderLoginForm()}
+            </TabPane>
+            <TabPane tab="Đăng ký" key="register">
+              {renderRegisterForm()}
+            </TabPane>
+          </Tabs>
         </div>
         <Modal
           title="Đặt lại mật khẩu"
