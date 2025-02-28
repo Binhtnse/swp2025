@@ -9,7 +9,7 @@ import {
   Tabs,
   Radio,
 } from "antd";
-import { UserOutlined, LockOutlined, MailOutlined } from "@ant-design/icons";
+import { UserOutlined, LockOutlined, MailOutlined, UserAddOutlined, PhoneOutlined } from "@ant-design/icons";
 import { Image } from "antd";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -48,18 +48,22 @@ const LoginScreen: React.FC = () => {
   };
 
   const handleRegister = async (values: {
-    username: string;
+    name: string;
     email: string;
     password: string;
-    confirmPassword: string;
+    phone: string;
+    role: string;
   }) => {
     try {
       const response = await axios.post(
-        "https://sep490-backend-production.up.railway.app/api/v1/user/register",
+        "http://14.225.207.207:8080/api/auth/register",
         {
-          username: values.username,
           email: values.email,
+          id: 0, // Default value as per the requirement
+          name: values.name,
           password: values.password,
+          phone: values.phone,
+          role: values.role
         }
       );
       console.log(response);
@@ -178,17 +182,19 @@ const LoginScreen: React.FC = () => {
       <Form.Item
         name="role"
         rules={[{ required: true, message: "Vui lòng chọn loại tài khoản!" }]}
+        initialValue="PARENT"
       >
         <Radio.Group>
-          <Radio.Button value="student">Học sinh</Radio.Button>
-          <Radio.Button value="parent">Phụ huynh</Radio.Button>
+          <Radio.Button value="PARENT">Phụ huynh</Radio.Button>
+          <Radio.Button value="STUDENT">Học sinh</Radio.Button>
         </Radio.Group>
       </Form.Item>
+      
       <Form.Item
-        name="username"
-        rules={[{ required: true, message: "Vui lòng nhập tên tài khoản!" }]}
+        name="name"
+        rules={[{ required: true, message: "Vui lòng nhập họ tên!" }]}
       >
-        <Input prefix={<UserOutlined />} placeholder="Tên tài khoản" />
+        <Input prefix={<UserAddOutlined />} placeholder="Họ tên" />
       </Form.Item>
 
       <Form.Item
@@ -199,6 +205,13 @@ const LoginScreen: React.FC = () => {
         ]}
       >
         <Input prefix={<MailOutlined />} placeholder="Email" />
+      </Form.Item>
+
+      <Form.Item
+        name="phone"
+        rules={[{ required: true, message: "Vui lòng nhập số điện thoại!" }]}
+      >
+        <Input prefix={<PhoneOutlined />} placeholder="Số điện thoại" />
       </Form.Item>
 
       <Form.Item
