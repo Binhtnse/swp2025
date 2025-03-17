@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Row, Col, Tag, Button, Typography, Spin, Alert } from 'antd';
-import { ClockCircleOutlined, UserOutlined, HeartOutlined } from '@ant-design/icons';
+import { Card, Row, Col, Tag, Button, Typography, Spin, Alert, Space } from 'antd';
+import { ClockCircleOutlined, UserOutlined, HeartOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const { Title, Paragraph } = Typography;
 
@@ -32,6 +33,7 @@ const SupportProgramScreens: React.FC = () => {
   const [supportPrograms, setSupportPrograms] = useState<SupportProgram[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchSupportPrograms = async () => {
@@ -50,6 +52,14 @@ const SupportProgramScreens: React.FC = () => {
 
     fetchSupportPrograms();
   }, []);
+
+  const handleProgramClick = (programId: number) => {
+    navigate(`/support-programs/${programId}`);
+  };
+
+  const handleViewDetails = (programId: number) => {
+    navigate(`/support-programs/details/${programId}`);
+  };
 
   // Helper function to get default image based on category
   const getDefaultImage = (category: string): string => {
@@ -115,7 +125,9 @@ const SupportProgramScreens: React.FC = () => {
               >
                 <Title level={4}>{program.title}</Title>
                 <Paragraph className="text-gray-600 mb-4">
-                  {program.description}
+                  {program.description.length > 100 
+                    ? `${program.description.substring(0, 100)}...` 
+                    : program.description}
                 </Paragraph>
                 
                 <div className="flex flex-wrap gap-2 mb-4">
@@ -130,13 +142,25 @@ const SupportProgramScreens: React.FC = () => {
                   </Tag>
                 </div>
                 
-                <Button 
-                  type="primary" 
-                  icon={<HeartOutlined />}
-                  className="w-full bg-blue-500 hover:bg-blue-600"
-                >
-                  Đăng Ký Tham Gia
-                </Button>
+                <Space direction="vertical" className="w-full">
+                  <Button 
+                    type="default"
+                    icon={<InfoCircleOutlined />}
+                    className="w-full"
+                    onClick={() => handleViewDetails(program.id)}
+                  >
+                    Xem Chi Tiết
+                  </Button>
+                  
+                  <Button 
+                    type="primary" 
+                    icon={<HeartOutlined />}
+                    className="w-full bg-blue-500 hover:bg-blue-600"
+                    onClick={() => handleProgramClick(program.id)}
+                  >
+                    Đăng Ký Tham Gia
+                  </Button>
+                </Space>
               </Card>
             </Col>
           ))}

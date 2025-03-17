@@ -9,6 +9,7 @@ import MentalHealthDocumentScreen from "../screens/MentalHealthDocumentScreen";
 import BlogDetailScreen from "../screens/BlogDetailScreen";
 import SurveyScreen from "../screens/SurveyScreen";
 import SurveyDetailScreen from "../screens/SurveyDetailScreen";
+import SupportProgramDetailScreen from "../screens/SupportProgramDetailScreen";
 
 const Layout = lazy(() => import("../components/MainLayout"));
 const ProtectedRoute = lazy(() => import("../utils/ProtectedRoutes"));
@@ -60,6 +61,16 @@ export const AppRoutes = createBrowserRouter([
       <Layout>
         <ProtectedRoute allowedRoles={["GUEST"]}>
           <SupportProgramScreens />
+        </ProtectedRoute>
+      </Layout>
+    ),
+  },
+  {
+    path: "/support-programs/details/:programId",
+    element: (
+      <Layout>
+        <ProtectedRoute allowedRoles={["GUEST"]}>
+          <SupportProgramDetailScreen />
         </ProtectedRoute>
       </Layout>
     ),
