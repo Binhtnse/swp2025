@@ -13,6 +13,7 @@ import SupportProgramDetailScreen from "../screens/SupportProgramDetailScreen";
 
 const Layout = lazy(() => import("../components/MainLayout"));
 const ProtectedRoute = lazy(() => import("../utils/ProtectedRoutes"));
+const AdLayout = lazy(() => import("../components/AdminLayout"));
 
 export const AppRoutes = createBrowserRouter([
   {
