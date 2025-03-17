@@ -102,42 +102,78 @@ const LoginScreen: React.FC = () => {
 
   const onFinish = async (values: { account: string; password: string }) => {
     try {
-      const response = await axios.post(
-        "https://sep490-backend-production.up.railway.app/api/v1/user/login",
-        {
-          account: values.account,
-          password: values.password,
-        }
+      // First try the new API endpoint
+      const newApiResponse = await axios.get(
+        `http://14.225.207.207:8080/api/web-admin/login?password=${encodeURIComponent(values.password)}&username=${encodeURIComponent(values.account)}`
       );
-      console.log("Login successful:", response.data);
-      message.success("Đăng nhập thành công!");
-
-      if (response.data.data && response.data.data.userLogin) {
-        localStorage.setItem(
-          "userLogin",
-          JSON.stringify(response.data.data.userLogin)
+      
+      if (newApiResponse.data && newApiResponse.data.status.code === 1000) {
+        console.log("Login successful with new API:", newApiResponse.data);
+        message.success("Đăng nhập thành công!");
+        
+        const userData = newApiResponse.data.data;
+        
+        // Store user data in localStorage
+        localStorage.setItem("userLogin", JSON.stringify({
+          id: userData.userId,
+          name: userData.name,
+          email: userData.username,
+          roleName: userData.role
+        }));
+        
+        setIsLoggedIn(true);
+        setRole(userData.role);
+        setUserName(userData.name);
+        
+        if (userData.role === "ADMIN") {
+          navigate("/dashboard");
+        } else {
+          navigate("/");
+        }
+        return;
+      }
+    } catch (newApiError) {
+      console.error("Login with new API failed, trying fallback:", newApiError);
+      
+      // If the new API fails, try the original API
+      try {
+        const response = await axios.post(
+          "https://sep490-backend-production.up.railway.app/api/v1/user/login",
+          {
+            account: values.account,
+            password: values.password,
+          }
         );
-        localStorage.setItem("accessToken", response.data.data.accessToken);
-        localStorage.setItem("refreshToken", response.data.data.refreshToken);
-      } else {
-        console.error("Unexpected response structure:", response.data);
-      }
+        console.log("Login successful with original API:", response.data);
+        message.success("Đăng nhập thành công!");
 
-      setIsLoggedIn(true);
-      const userRole =
-        response.data.data.userLogin.roleName?.toUpperCase() || "";
-      setRole(userRole);
-      const leaderType = response.data.data.userLogin.leaderType || "";
-      localStorage.setItem("leaderType", leaderType);
-      setUserName(response.data.data.userLogin.name || "");
-      if (userRole === "ADMIN") {
-        navigate("/dashboard");
-      } else {
-        navigate("/");
+        if (response.data.data && response.data.data.userLogin) {
+          localStorage.setItem(
+            "userLogin",
+            JSON.stringify(response.data.data.userLogin)
+          );
+          localStorage.setItem("accessToken", response.data.data.accessToken);
+          localStorage.setItem("refreshToken", response.data.data.refreshToken);
+        } else {
+          console.error("Unexpected response structure:", response.data);
+        }
+
+        setIsLoggedIn(true);
+        const userRole =
+          response.data.data.userLogin.roleName?.toUpperCase() || "";
+        setRole(userRole);
+        const leaderType = response.data.data.userLogin.leaderType || "";
+        localStorage.setItem("leaderType", leaderType);
+        setUserName(response.data.data.userLogin.name || "");
+        if (userRole === "ADMIN") {
+          navigate("/dashboard");
+        } else {
+          navigate("/");
+        }
+      } catch (originalApiError) {
+        console.error("Both login attempts failed:", originalApiError);
+        message.error("Đăng nhập thất bại. Vui lòng thử lại!");
       }
-    } catch (error) {
-      console.error("Login failed:", error);
-      message.error("Đăng nhập thất bại. Vui lòng thử lại!");
     }
   };
 
@@ -350,3 +386,4 @@ const LoginScreen: React.FC = () => {
 };
 
 export default LoginScreen;
+

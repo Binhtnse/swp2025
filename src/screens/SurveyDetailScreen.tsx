@@ -128,14 +128,14 @@ const SurveyDetailScreen: React.FC = () => {
   const handleSubmitSurvey = async () => {
     try {
       setSubmitting(true);
-
+  
       // Format the data according to the API requirements
       const formattedResponses = responses.map((response) => {
         // For CHOOSE_OPTION questions, we need to put the option ID in listOptionId array
         const question = questions.find(
           (q) => q.questionId === response.questionId
         );
-
+  
         if (question?.typeQuestion === "CHOOSE_OPTION") {
           return {
             answerText: "", // Empty string for option-based questions
@@ -151,17 +151,23 @@ const SurveyDetailScreen: React.FC = () => {
           };
         }
       });
-
+  
       // Make the POST request with surveyId as a query parameter
-      await axios.post(
+      const response = await axios.post(
         `http://14.225.207.207:8080/api/survey/save-data-answer?surveyId=${surveyId}`,
         formattedResponses
       );
-
+  
       console.log("Submitting responses:", formattedResponses);
-
-      message.success("Cảm ơn bạn đã hoàn thành khảo sát!");
-      navigate("/surveys"); // Navigate back to surveys list
+  
+      // Check if the response is successful
+      if (response.data && response.data.status && response.data.status.code === 1000) {
+        message.success("Cảm ơn bạn đã hoàn thành khảo sát!");
+        navigate("/"); // Navigate to home screen instead of surveys list
+      } else {
+        message.warning("Khảo sát đã được gửi nhưng có lỗi xảy ra.");
+        navigate("/");
+      }
     } catch (error) {
       console.error("Failed to submit survey:", error);
       message.error("Không thể gửi khảo sát. Vui lòng thử lại sau.");

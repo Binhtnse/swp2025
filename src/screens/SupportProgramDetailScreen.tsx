@@ -11,7 +11,8 @@ import {
   Space, 
   Descriptions, 
   Modal,
-  notification
+  notification,
+  Select
 } from 'antd';
 import { 
   ArrowLeftOutlined, 
@@ -23,6 +24,7 @@ import {
 import axios from 'axios';
 
 const { Title, Paragraph } = Typography;
+const { Option } = Select;
 
 interface Registration {
   createdAt: string | null;
@@ -45,6 +47,20 @@ interface SupportProgram {
   imageUrl?: string;
 }
 
+interface Student {
+  id: number;
+  name: string;
+  email: string;
+}
+
+interface ApiResponse {
+  status: {
+    code: number;
+    message: string;
+  };
+  data: SupportProgram;
+}
+
 const SupportProgramDetailScreen: React.FC = () => {
   const { programId } = useParams<{ programId: string }>();
   const navigate = useNavigate();
@@ -53,6 +69,21 @@ const SupportProgramDetailScreen: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [registering, setRegistering] = useState<boolean>(false);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [children, setChildren] = useState<Student[]>([]);
+  const [selectedChildId, setSelectedChildId] = useState<number | null>(null);
+  const [loadingChildren, setLoadingChildren] = useState<boolean>(false);
+
+  // Get user role from localStorage
+  const getUserRole = (): string => {
+    const userLogin = localStorage.getItem('userLogin');
+    if (userLogin) {
+      const userData = JSON.parse(userLogin);
+      return userData.roleName || '';
+    }
+    return '';
+  };
+
+  const userRole = getUserRole();
 
   useEffect(() => {
     const fetchProgramDetails = async () => {
@@ -76,6 +107,23 @@ const SupportProgramDetailScreen: React.FC = () => {
     }
   }, [programId]);
 
+  const fetchChildren = async () => {
+    try {
+      setLoadingChildren(true);
+      const response = await axios.get('http://14.225.207.207:8080/api/user/get-student-of-parent');
+      setChildren(response.data || []);
+    } catch (err) {
+      console.error('Error fetching children:', err);
+      notification.error({
+        message: 'Error',
+        description: 'Không thể tải danh sách học sinh. Vui lòng thử lại sau.',
+        placement: 'topRight',
+      });
+    } finally {
+      setLoadingChildren(false);
+    }
+  };
+
   // Helper function to get default image based on category
   const getDefaultImage = (category: string): string => {
     const categoryMap: Record<string, string> = {
@@ -88,48 +136,65 @@ const SupportProgramDetailScreen: React.FC = () => {
   };
 
   const handleRegister = async () => {
-    setIsModalOpen(true);
+    if (userRole === 'PARENT') {
+      // For parent, fetch children and show modal
+      fetchChildren();
+      setIsModalOpen(true);
+    } else {
+      // For student, show confirmation modal
+      setIsModalOpen(true);
+    }
   };
 
   const confirmRegistration = async () => {
     try {
       setRegistering(true);
-      // This would be replaced with your actual registration API endpoint
-      // await axios.post('http://14.225.207.207:8080/api/support-program/register', {
-      //   supportProgramId: id
-      // });
       
-      // Simulating API call with timeout
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      let url = '';
+      if (userRole === 'PARENT' && selectedChildId) {
+        // Parent registering a child
+        url = `http://14.225.207.207:8080/api/program-registration/register-form-parent?programId=${programId}&studentId=${selectedChildId}`;
+      } else {
+        // Student registering themselves
+        url = `http://14.225.207.207:8080/api/program-registration/register-student?programId=${programId}`;
+      }
       
-      notification.success({
-        message: 'Registration Successful',
-        description: `You have successfully registered for ${program?.title}`,
-        placement: 'topRight',
-      });
+      const response = await axios.post<ApiResponse>(url);
       
-      setIsModalOpen(false);
+      if (response.data.status.code === 1000) {
+        notification.success({
+          message: 'Registration Successful',
+          description: `You have successfully registered for ${program?.title}`,
+          placement: 'topRight',
+        });
+        
+        setIsModalOpen(false);
+        
+        // Navigate back to home screen after successful registration
+        navigate('/');
+      } else {
+        notification.error({
+          message: 'Registration Failed',
+          description: response.data.status.message || 'Failed to register for the program.',
+          placement: 'topRight',
+        });
+      }
       
-      // Refresh program details to show updated registration status
-      const response = await axios.get(
-        `http://14.225.207.207:8080/api/support-program/get-detail-support-program?supportProgramId=${programId}`
-      );
-      setProgram(response.data);
-      
-    } catch (err) {
+    } catch (err: Error | unknown) {
       console.error('Error registering for program:', err);
       notification.error({
         message: 'Registration Failed',
-        description: 'Failed to register for the program. Please try again later.',
+        description: err instanceof Error && 'response' in err ? ((err as { response: { data: { status: { message: string } } } }).response.data.status.message) : 'Failed to register for the program. Please try again later.',
         placement: 'topRight',
       });
     } finally {
       setRegistering(false);
     }
-  };
-
+  };  
+  
   const handleCancel = () => {
     setIsModalOpen(false);
+    setSelectedChildId(null);
   };
 
   const goBack = () => {
@@ -253,23 +318,53 @@ const SupportProgramDetailScreen: React.FC = () => {
             className={`px-8 ${isUserRegistered ? 'bg-green-500 hover:bg-green-600' : 'bg-blue-500 hover:bg-blue-600'}`}
             onClick={handleRegister}
             disabled={isUserRegistered}
+            loading={registering && !isModalOpen}
           >
             {isUserRegistered ? 'Already Registered' : 'Register for this Program'}
           </Button>
         </div>
       </Card>
 
+      {/* Modal for registration confirmation */}
       <Modal
-        title="Confirm Registration"
+        title={userRole === 'PARENT' ? "Chọn học sinh đăng ký" : "Confirm Registration"}
         open={isModalOpen}
         onOk={confirmRegistration}
         onCancel={handleCancel}
         confirmLoading={registering}
-        okText="Confirm Registration"
+        okText={userRole === 'PARENT' ? "Đăng ký cho học sinh" : "Confirm Registration"}
         cancelText="Cancel"
+        okButtonProps={{ 
+          disabled: userRole === 'PARENT' && !selectedChildId 
+        }}
       >
-        <p>Are you sure you want to register for "{program.title}"?</p>
-        <p>By registering, you agree to participate in this mental health support program.</p>
+        {userRole === 'PARENT' ? (
+          <>
+            <div className="mb-4">
+              <p>Vui lòng chọn học sinh bạn muốn đăng ký tham gia chương trình:</p>
+            </div>
+            <Select
+              placeholder="Chọn học sinh"
+              style={{ width: '100%' }}
+              onChange={(value) => setSelectedChildId(Number(value))}
+              loading={loadingChildren}
+            >
+              {children.map(child => (
+                <Option key={child.id} value={child.id}>{child.name}</Option>
+              ))}
+            </Select>
+            {children.length === 0 && !loadingChildren && (
+              <div className="mt-2 text-red-500">
+                Không tìm thấy học sinh nào. Vui lòng liên hệ quản trị viên.
+              </div>
+            )}
+          </>
+        ) : (
+          <>
+            <p>Are you sure you want to register for "{program.title}"?</p>
+            <p>By registering, you agree to participate in this mental health support program.</p>
+          </>
+        )}
       </Modal>
     </div>
   );
