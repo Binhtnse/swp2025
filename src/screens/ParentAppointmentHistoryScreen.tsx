@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Table, Tag, Typography, Spin, Empty, Card, Button, message, Select, Space, Avatar } from 'antd';
 import { ColumnsType } from 'antd/es/table';
-import axios from 'axios';
 import dayjs from 'dayjs';
 import { UserOutlined } from '@ant-design/icons';
 
@@ -42,26 +41,189 @@ const ParentAppointmentHistoryScreen: React.FC = () => {
   const [loadingAppointments, setLoadingAppointments] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch children of the parent
+  // Mock data for children
+  const mockChildren: User[] = [
+    {
+      id: 1,
+      fullName: "Nguyễn Văn An",
+      email: "an@example.com",
+      role: "STUDENT",
+      phoneNumber: "0123456789",
+      imageUrl: "https://randomuser.me/api/portraits/children/1.jpg",
+      dateOfBirth: "2010-05-15",
+      gender: "MALE"
+    },
+    {
+      id: 2,
+      fullName: "Trần Thị Bình",
+      email: "binh@example.com",
+      role: "STUDENT",
+      phoneNumber: "0987654321",
+      imageUrl: "https://randomuser.me/api/portraits/children/2.jpg",
+      dateOfBirth: "2012-08-20",
+      gender: "FEMALE"
+    }
+  ];
+
+  // Mock data for appointments
+  const mockAppointments: Record<number, Appointment[]> = {
+    1: [
+      {
+        id: 101,
+        appointmentDate: "2023-11-15T00:00:00Z",
+        startTime: "2023-11-15T09:00:00Z",
+        endTime: "2023-11-15T10:00:00Z",
+        status: "COMPLETED",
+        notes: "Tư vấn về vấn đề học tập",
+        report: "Học sinh có tiến bộ trong việc tập trung học tập. Cần tiếp tục theo dõi và hỗ trợ.",
+        createdAt: "2023-11-10T08:30:00Z",
+        updatedAt: "2023-11-15T10:15:00Z",
+        createdBy: {
+          id: 5,
+          fullName: "Lê Thị Hương",
+          email: "huong@example.com",
+          role: "COUNSELOR",
+          phoneNumber: "0123456789",
+          imageUrl: null
+        },
+        updatedBy: {
+          id: 5,
+          fullName: "Lê Thị Hương",
+          email: "huong@example.com",
+          role: "COUNSELOR",
+          phoneNumber: "0123456789",
+          imageUrl: null
+        },
+        isDeleted: false
+      },
+      {
+        id: 102,
+        appointmentDate: "2023-12-05T00:00:00Z",
+        startTime: "2023-12-05T14:00:00Z",
+        endTime: "2023-12-05T15:00:00Z",
+        status: "SCHEDULED",
+        notes: "Theo dõi tiến độ sau buổi tư vấn trước",
+        report: null,
+        createdAt: "2023-11-25T10:45:00Z",
+        updatedAt: "2023-11-25T10:45:00Z",
+        createdBy: {
+          id: 5,
+          fullName: "Lê Thị Hương",
+          email: "huong@example.com",
+          role: "COUNSELOR",
+          phoneNumber: "0123456789",
+          imageUrl: null
+        },
+        updatedBy: {
+          id: 5,
+          fullName: "Lê Thị Hương",
+          email: "huong@example.com",
+          role: "COUNSELOR",
+          phoneNumber: "0123456789",
+          imageUrl: null
+        },
+        isDeleted: false
+      },
+      {
+        id: 103,
+        appointmentDate: "2023-10-20T00:00:00Z",
+        startTime: "2023-10-20T13:30:00Z",
+        endTime: "2023-10-20T14:30:00Z",
+        status: "CANCELLED",
+        notes: "Tư vấn về kỹ năng giao tiếp",
+        report: null,
+        createdAt: "2023-10-15T09:20:00Z",
+        updatedAt: "2023-10-19T16:45:00Z",
+        createdBy: {
+          id: 6,
+          fullName: "Trần Văn Minh",
+          email: "minh@example.com",
+          role: "COUNSELOR",
+          phoneNumber: "0987654321",
+          imageUrl: null
+        },
+        updatedBy: {
+          id: 6,
+          fullName: "Trần Văn Minh",
+          email: "minh@example.com",
+          role: "COUNSELOR",
+          phoneNumber: "0987654321",
+          imageUrl: null
+        },
+        isDeleted: false
+      }
+    ],
+    2: [
+      {
+        id: 201,
+        appointmentDate: "2023-11-18T00:00:00Z",
+        startTime: "2023-11-18T10:00:00Z",
+        endTime: "2023-11-18T11:00:00Z",
+        status: "COMPLETED",
+        notes: "Tư vấn về vấn đề hòa nhập",
+        report: "Học sinh đã có tiến bộ trong việc hòa nhập với bạn bè. Cần tiếp tục khuyến khích tham gia các hoạt động nhóm.",
+        createdAt: "2023-11-12T14:30:00Z",
+        updatedAt: "2023-11-18T11:15:00Z",
+        createdBy: {
+          id: 6,
+          fullName: "Trần Văn Minh",
+          email: "minh@example.com",
+          role: "COUNSELOR",
+          phoneNumber: "0987654321",
+          imageUrl: null
+        },
+        updatedBy: {
+          id: 6,
+          fullName: "Trần Văn Minh",
+          email: "minh@example.com",
+          role: "COUNSELOR",
+          phoneNumber: "0987654321",
+          imageUrl: null
+        },
+        isDeleted: false
+      },
+      {
+        id: 202,
+        appointmentDate: "2023-12-10T00:00:00Z",
+        startTime: "2023-12-10T09:30:00Z",
+        endTime: "2023-12-10T10:30:00Z",
+        status: "PENDING",
+        notes: "Đánh giá tiến bộ học kỳ 1",
+        report: null,
+        createdAt: "2023-12-01T08:15:00Z",
+        updatedAt: "2023-12-01T08:15:00Z",
+        createdBy: {
+          id: 5,
+          fullName: "Lê Thị Hương",
+          email: "huong@example.com",
+          role: "COUNSELOR",
+          phoneNumber: "0123456789",
+          imageUrl: null
+        },
+        updatedBy: {
+          id: 5,
+          fullName: "Lê Thị Hương",
+          email: "huong@example.com",
+          role: "COUNSELOR",
+          phoneNumber: "0123456789",
+          imageUrl: null
+        },
+        isDeleted: false
+      }
+    ]
+  };
+
+  // Fetch children of the parent (using mock data)
   const fetchChildren = async () => {
     try {
       setLoadingChildren(true);
-      const response = await axios.get(
-        'http://14.225.207.207:8080/api/user/get-student-of-parent',
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        }
-      );
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 800));
       
-      if (response.data && response.data.length > 0) {
-        setChildren(response.data);
-        // Auto-select the first child
-        setSelectedChildId(response.data[0].id);
-      } else {
-        setError('Không tìm thấy thông tin học sinh. Vui lòng kiểm tra lại.');
-      }
+      setChildren(mockChildren);
+      // Auto-select the first child
+      setSelectedChildId(mockChildren[0].id);
+      setError(null);
     } catch (err) {
       console.error('Error fetching children:', err);
       setError('Không thể tải danh sách học sinh. Vui lòng thử lại sau.');
@@ -71,21 +233,17 @@ const ParentAppointmentHistoryScreen: React.FC = () => {
     }
   };
 
-  // Fetch appointments for the selected child
+  // Fetch appointments for the selected child (using mock data)
   const fetchAppointments = async (childId: number) => {
     if (!childId) return;
     
     try {
       setLoadingAppointments(true);
-      const response = await axios.get(
-        `http://14.225.207.207:8080/api/appointment/get-history-booking-from-student?studentId=${childId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        }
-      );
-      setAppointments(response.data);
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      const appointmentsForChild = mockAppointments[childId] || [];
+      setAppointments(appointmentsForChild);
       setError(null);
     } catch (err) {
       console.error('Error fetching appointment history:', err);
@@ -99,12 +257,14 @@ const ParentAppointmentHistoryScreen: React.FC = () => {
 
   useEffect(() => {
     fetchChildren();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     if (selectedChildId) {
       fetchAppointments(selectedChildId);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedChildId]);
 
   const handleChildChange = (value: number) => {
@@ -236,7 +396,7 @@ const ParentAppointmentHistoryScreen: React.FC = () => {
           </div>
         ) : (
           <div className="mb-6">
-            <div className="font-medium mb-2">Chọn học sinh:</div>
+          <div className="font-medium mb-2">Chọn học sinh:</div>
             <Select
               placeholder="Chọn học sinh"
               style={{ width: '100%' }}

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Input, Select, Row, Col, Rate, Button, Avatar, Spin, Alert } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
-import axios from 'axios';
 
 const { Search } = Input;
 
@@ -28,13 +27,85 @@ const PsychologistListScreen: React.FC = () => {
     const fetchPsychologists = async () => {
       try {
         setLoading(true);
-        const response = await axios.get('http://14.225.207.207:8080/api/user/get-list-psychologist');
-        setPsychologists(response.data);
-        setError(null);
+        // Mock data instead of API call
+        const mockPsychologists: Psychologist[] = [
+          {
+            id: 1,
+            fullName: "Nguyễn Thị Minh",
+            email: "minh@example.com",
+            role: "PSYCHOLOGIST",
+            dateOfBirth: "1985-05-15",
+            gender: "Female",
+            phoneNumber: "0912345678",
+            imageUrl: "https://randomuser.me/api/portraits/women/1.jpg",
+            address: "Hà Nội"
+          },
+          {
+            id: 2,
+            fullName: "Trần Văn Hùng",
+            email: "hung@example.com",
+            role: "PSYCHOLOGIST",
+            dateOfBirth: "1980-08-20",
+            gender: "Male",
+            phoneNumber: "0923456789",
+            imageUrl: "https://randomuser.me/api/portraits/men/2.jpg",
+            address: "Hồ Chí Minh"
+          },
+          {
+            id: 3,
+            fullName: "Lê Thị Hương",
+            email: "huong@example.com",
+            role: "PSYCHOLOGIST",
+            dateOfBirth: "1988-03-10",
+            gender: "Female",
+            phoneNumber: "0934567890",
+            imageUrl: "https://randomuser.me/api/portraits/women/3.jpg",
+            address: "Đà Nẵng"
+          },
+          {
+            id: 4,
+            fullName: "Phạm Minh Tuấn",
+            email: "tuan@example.com",
+            role: "PSYCHOLOGIST",
+            dateOfBirth: "1982-11-25",
+            gender: "Male",
+            phoneNumber: "0945678901",
+            imageUrl: "https://randomuser.me/api/portraits/men/4.jpg",
+            address: "Hải Phòng"
+          },
+          {
+            id: 5,
+            fullName: "Hoàng Thị Lan",
+            email: "lan@example.com",
+            role: "PSYCHOLOGIST",
+            dateOfBirth: "1990-07-18",
+            gender: "Female",
+            phoneNumber: "0956789012",
+            imageUrl: "https://randomuser.me/api/portraits/women/5.jpg",
+            address: "Cần Thơ"
+          },
+          {
+            id: 6,
+            fullName: "Vũ Đức Thành",
+            email: "thanh@example.com",
+            role: "PSYCHOLOGIST",
+            dateOfBirth: "1978-09-30",
+            gender: "Male",
+            phoneNumber: "0967890123",
+            imageUrl: "https://randomuser.me/api/portraits/men/6.jpg",
+            address: "Huế"
+          }
+        ];
+        
+        // Simulate network delay
+        setTimeout(() => {
+          setPsychologists(mockPsychologists);
+          setError(null);
+          setLoading(false);
+        }, 1000);
       } catch (err) {
         console.error('Error fetching psychologists:', err);
         setError('Failed to fetch psychologists. Please try again later.');
-      } finally {
         setLoading(false);
       }
     };
@@ -151,4 +222,3 @@ const PsychologistListScreen: React.FC = () => {
 };
 
 export default PsychologistListScreen;
-

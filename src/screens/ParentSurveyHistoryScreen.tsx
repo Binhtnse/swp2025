@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Table, Typography, Card, Empty, Spin, message } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import axios from 'axios';
 
 const { Title } = Typography;
 
@@ -21,12 +20,53 @@ const ParentSurveyHistoryScreen: React.FC = () => {
     const fetchSurveyHistory = async () => {
       try {
         setLoading(true);
-        const response = await axios.get('http://14.225.207.207:8080/api/survey/get-history-survey-from-parent');
-        setSurveyHistory(response.data);
+        // Mock data instead of API call
+        const mockSurveyHistory: SurveyHistoryItem[] = [
+          {
+            id: 1,
+            score: 85,
+            completedAt: '2023-11-15T14:30:00Z',
+            createdAt: '2023-11-15T13:00:00Z',
+            updatedAt: '2023-11-15T14:30:00Z'
+          },
+          {
+            id: 2,
+            score: 72,
+            completedAt: '2023-10-22T09:45:00Z',
+            createdAt: '2023-10-22T09:00:00Z',
+            updatedAt: '2023-10-22T09:45:00Z'
+          },
+          {
+            id: 3,
+            score: 90,
+            completedAt: '2023-09-05T16:20:00Z',
+            createdAt: '2023-09-05T15:30:00Z',
+            updatedAt: '2023-09-05T16:20:00Z'
+          },
+          {
+            id: 4,
+            score: 68,
+            completedAt: '2023-08-18T11:10:00Z',
+            createdAt: '2023-08-18T10:30:00Z',
+            updatedAt: '2023-08-18T11:10:00Z'
+          },
+          {
+            id: 5,
+            score: 78,
+            completedAt: '2023-07-30T13:25:00Z',
+            createdAt: '2023-07-30T12:45:00Z',
+            updatedAt: '2023-07-30T13:25:00Z'
+          }
+        ];
+        
+        // Simulate network delay
+        setTimeout(() => {
+          setSurveyHistory(mockSurveyHistory);
+          setLoading(false);
+        }, 1000);
       } catch (error) {
         console.error('Lỗi khi lấy lịch sử khảo sát:', error);
         message.error('Không thể tải lịch sử khảo sát. Vui lòng thử lại sau.');
-      } finally {
         setLoading(false);
       }
     };
@@ -110,3 +150,4 @@ const ParentSurveyHistoryScreen: React.FC = () => {
 };
 
 export default ParentSurveyHistoryScreen;
+

@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
 import { Card, Row, Col, Spin, Typography, Empty, message } from 'antd';
 import { useNavigate } from 'react-router-dom';
 
@@ -7,6 +6,7 @@ interface Survey {
   id: number;
   title: string;
   description: string;
+  status: string;
   isDeleted: boolean;
   createdAt: string | null;
   updatedAt: string | null;
@@ -22,18 +22,52 @@ const SurveyScreen: React.FC = () => {
     const fetchSurveys = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(
-          'http://14.225.207.207:8080/api/survey/get-all-survey'
-        );
+        
+        // Mock data instead of API call
+        const mockSurveys: Survey[] = [
+          {
+            id: 1,
+            title: "Đánh giá mức độ stress",
+            description: "Khảo sát này giúp đánh giá mức độ stress của bạn trong cuộc sống hàng ngày",
+            status: "ACTIVE",
+            isDeleted: false,
+            createdAt: "2023-10-01T08:00:00Z",
+            updatedAt: "2023-10-01T08:00:00Z"
+          },
+          {
+            id: 2,
+            title: "Đánh giá sức khỏe tinh thần",
+            description: "Khảo sát này giúp đánh giá tình trạng sức khỏe tinh thần của bạn trong tháng qua",
+            status: "ACTIVE",
+            isDeleted: false,
+            createdAt: "2023-09-15T10:30:00Z",
+            updatedAt: "2023-09-15T10:30:00Z"
+          },
+          {
+            id: 3,
+            title: "Đánh giá mức độ lo âu",
+            description: "Khảo sát này giúp đánh giá mức độ lo âu của bạn trong hai tuần qua",
+            status: "ACTIVE",
+            isDeleted: false,
+            createdAt: "2023-11-05T14:15:00Z",
+            updatedAt: "2023-11-05T14:15:00Z"
+          }
+        ];
+        
         // Filter out deleted surveys
-        const activeSurveys = response.data.filter(
+        const activeSurveys = mockSurveys.filter(
           (survey: Survey) => !survey.isDeleted
         );
-        setSurveys(activeSurveys);
+        
+        // Simulate network delay
+        setTimeout(() => {
+          setSurveys(activeSurveys);
+          setLoading(false);
+        }, 1000);
+        
       } catch (error) {
         console.error('Failed to fetch surveys:', error);
         message.error('Không thể tải khảo sát. Vui lòng thử lại sau.');
-      } finally {
         setLoading(false);
       }
     };
@@ -78,6 +112,9 @@ const SurveyScreen: React.FC = () => {
                   <div className="mt-4 pt-3 border-t border-gray-100">
                     <Text type="secondary" className="text-sm">
                       Mã khảo sát: {survey.id}
+                    </Text>
+                    <Text type="secondary" className="text-sm ml-4">
+                      Trạng thái: {survey.status}
                     </Text>
                   </div>
                 </div>

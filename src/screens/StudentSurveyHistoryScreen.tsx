@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Table, Typography, Card, Empty, Spin, message } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import axios from 'axios';
 
 const { Title } = Typography;
 
@@ -21,12 +20,53 @@ const StudentSurveyHistoryScreen: React.FC = () => {
     const fetchSurveyHistory = async () => {
       try {
         setLoading(true);
-        const response = await axios.get('http://14.225.207.207:8080/api/survey/get-history-survey-from-student');
-        setSurveyHistory(response.data);
+        // Mock data instead of API call
+        const mockSurveyHistory: SurveyHistoryItem[] = [
+          {
+            id: 1,
+            score: 78,
+            completedAt: '2023-11-20T14:30:00Z',
+            createdAt: '2023-11-20T13:00:00Z',
+            updatedAt: '2023-11-20T14:30:00Z'
+          },
+          {
+            id: 2,
+            score: 65,
+            completedAt: '2023-10-15T09:45:00Z',
+            createdAt: '2023-10-15T09:00:00Z',
+            updatedAt: '2023-10-15T09:45:00Z'
+          },
+          {
+            id: 3,
+            score: 92,
+            completedAt: '2023-09-10T16:20:00Z',
+            createdAt: '2023-09-10T15:30:00Z',
+            updatedAt: '2023-09-10T16:20:00Z'
+          },
+          {
+            id: 4,
+            score: 70,
+            completedAt: '2023-08-05T11:10:00Z',
+            createdAt: '2023-08-05T10:30:00Z',
+            updatedAt: '2023-08-05T11:10:00Z'
+          },
+          {
+            id: 5,
+            score: 85,
+            completedAt: '2023-07-20T13:25:00Z',
+            createdAt: '2023-07-20T12:45:00Z',
+            updatedAt: '2023-07-20T13:25:00Z'
+          }
+        ];
+        
+        // Simulate network delay
+        setTimeout(() => {
+          setSurveyHistory(mockSurveyHistory);
+          setLoading(false);
+        }, 1000);
       } catch (error) {
         console.error('Lỗi khi lấy lịch sử khảo sát:', error);
         message.error('Không thể tải lịch sử khảo sát. Vui lòng thử lại sau.');
-      } finally {
         setLoading(false);
       }
     };

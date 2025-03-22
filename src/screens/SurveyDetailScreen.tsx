@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
 import {
   Typography,
   Card,
@@ -50,24 +49,91 @@ const SurveyDetailScreen: React.FC = () => {
     const fetchSurveyDetails = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(
-          `http://14.225.207.207:8080/api/survey/get-data-survey?surveyId=${surveyId}`
-        );
-
-        if (response.data && response.data.length > 0) {
-          setQuestions(response.data);
-
-          // You might want to fetch the survey title from another API
-          // For now, we'll use a placeholder or extract from URL
-          setSurveyTitle(`Survey #${surveyId}`);
-        } else {
-          message.error("Không tìm thấy dữ liệu khảo sát.");
-          navigate("/surveys");
+        
+        // Mock data instead of API call
+        const mockQuestions: Question[] = [
+          {
+            surveyId: 1,
+            questionId: 1,
+            questionText: "Bạn có thường xuyên cảm thấy căng thẳng không?",
+            typeQuestion: "CHOOSE_OPTION",
+            listOption: [
+              { id: 1, optionText: "Không bao giờ", createdAt: null, updatedAt: null },
+              { id: 2, optionText: "Thỉnh thoảng", createdAt: null, updatedAt: null },
+              { id: 3, optionText: "Thường xuyên", createdAt: null, updatedAt: null },
+              { id: 4, optionText: "Luôn luôn", createdAt: null, updatedAt: null }
+            ]
+          },
+          {
+            surveyId: 1,
+            questionId: 2,
+            questionText: "Bạn có khó ngủ vì lo lắng không?",
+            typeQuestion: "CHOOSE_OPTION",
+            listOption: [
+              { id: 5, optionText: "Không bao giờ", createdAt: null, updatedAt: null },
+              { id: 6, optionText: "Thỉnh thoảng", createdAt: null, updatedAt: null },
+              { id: 7, optionText: "Thường xuyên", createdAt: null, updatedAt: null },
+              { id: 8, optionText: "Luôn luôn", createdAt: null, updatedAt: null }
+            ]
+          },
+          {
+            surveyId: 1,
+            questionId: 3,
+            questionText: "Bạn có thường xuyên cảm thấy buồn chán không?",
+            typeQuestion: "CHOOSE_OPTION",
+            listOption: [
+              { id: 9, optionText: "Không bao giờ", createdAt: null, updatedAt: null },
+              { id: 10, optionText: "Thỉnh thoảng", createdAt: null, updatedAt: null },
+              { id: 11, optionText: "Thường xuyên", createdAt: null, updatedAt: null },
+              { id: 12, optionText: "Luôn luôn", createdAt: null, updatedAt: null }
+            ]
+          },
+          {
+            surveyId: 1,
+            questionId: 4,
+            questionText: "Bạn có cảm thấy mất hứng thú với các hoạt động mà bạn từng yêu thích không?",
+            typeQuestion: "CHOOSE_OPTION",
+            listOption: [
+              { id: 13, optionText: "Không bao giờ", createdAt: null, updatedAt: null },
+              { id: 14, optionText: "Thỉnh thoảng", createdAt: null, updatedAt: null },
+              { id: 15, optionText: "Thường xuyên", createdAt: null, updatedAt: null },
+              { id: 16, optionText: "Luôn luôn", createdAt: null, updatedAt: null }
+            ]
+          },
+          {
+            surveyId: 1,
+            questionId: 5,
+            questionText: "Bạn có thường xuyên cảm thấy lo lắng quá mức không?",
+            typeQuestion: "CHOOSE_OPTION",
+            listOption: [
+              { id: 17, optionText: "Không bao giờ", createdAt: null, updatedAt: null },
+              { id: 18, optionText: "Thỉnh thoảng", createdAt: null, updatedAt: null },
+              { id: 19, optionText: "Thường xuyên", createdAt: null, updatedAt: null },
+              { id: 20, optionText: "Luôn luôn", createdAt: null, updatedAt: null }
+            ]
+          }
+        ];
+        
+        // Set mock survey title based on surveyId
+        let title = "Khảo sát sức khỏe tinh thần";
+        if (surveyId === "1") {
+          title = "Đánh giá mức độ stress";
+        } else if (surveyId === "2") {
+          title = "Đánh giá sức khỏe tinh thần";
+        } else if (surveyId === "3") {
+          title = "Đánh giá mức độ lo âu";
         }
+        
+        // Simulate network delay
+        setTimeout(() => {
+          setQuestions(mockQuestions);
+          setSurveyTitle(title);
+          setLoading(false);
+        }, 1000);
+        
       } catch (error) {
         console.error("Failed to fetch survey details:", error);
         message.error("Không thể tải chi tiết khảo sát. Vui lòng thử lại sau.");
-      } finally {
         setLoading(false);
       }
     };
@@ -152,26 +218,18 @@ const SurveyDetailScreen: React.FC = () => {
         }
       });
   
-      // Make the POST request with surveyId as a query parameter
-      const response = await axios.post(
-        `http://14.225.207.207:8080/api/survey/save-data-answer?surveyId=${surveyId}`,
-        formattedResponses
-      );
-  
       console.log("Submitting responses:", formattedResponses);
   
-      // Check if the response is successful
-      if (response.data && response.data.status && response.data.status.code === 1000) {
+      // Simulate successful submission
+      setTimeout(() => {
         message.success("Cảm ơn bạn đã hoàn thành khảo sát!");
         navigate("/"); // Navigate to home screen instead of surveys list
-      } else {
-        message.warning("Khảo sát đã được gửi nhưng có lỗi xảy ra.");
-        navigate("/");
-      }
+        setSubmitting(false);
+      }, 1500);
+      
     } catch (error) {
       console.error("Failed to submit survey:", error);
       message.error("Không thể gửi khảo sát. Vui lòng thử lại sau.");
-    } finally {
       setSubmitting(false);
     }
   };

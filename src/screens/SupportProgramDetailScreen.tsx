@@ -21,7 +21,6 @@ import {
   HeartOutlined,
   CheckCircleOutlined
 } from '@ant-design/icons';
-import axios from 'axios';
 
 const { Title, Paragraph } = Typography;
 const { Option } = Select;
@@ -53,14 +52,6 @@ interface Student {
   email: string;
 }
 
-interface ApiResponse {
-  status: {
-    code: number;
-    message: string;
-  };
-  data: SupportProgram;
-}
-
 const SupportProgramDetailScreen: React.FC = () => {
   const { programId } = useParams<{ programId: string }>();
   const navigate = useNavigate();
@@ -89,29 +80,49 @@ const SupportProgramDetailScreen: React.FC = () => {
     const fetchProgramDetails = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(
-          `http://14.225.207.207:8080/api/support-program/get-detail-support-program?supportProgramId=${programId}`
-        );
-        setProgram(response.data);
-        setError(null);
+        
+        // Mock data - using the first item from SupportProgramScreens.tsx
+        setTimeout(() => {
+          // This is the first item from the mock data in SupportProgramScreens.tsx
+          const mockProgram: SupportProgram = {
+            id: 1,
+            title: 'Tư vấn tâm lý cá nhân',
+            category: 'Tư vấn',
+            description: 'Chương trình tư vấn tâm lý cá nhân giúp sinh viên giải quyết các vấn đề về stress và lo âu.',
+            imageUrl: 'https://images.unsplash.com/photo-1573497620053-ea5300f94f21?ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80',
+            isDeleted: false,
+            createdAt: null,
+            updatedAt: '2023-10-15T10:00:00Z',
+            registrations: []
+          };
+          
+          setProgram(mockProgram);
+          setError(null);
+          setLoading(false);
+        }, 500); // Simulate network delay
+        
       } catch (err) {
         console.error('Error fetching program details:', err);
         setError('Failed to fetch program details. Please try again later.');
-      } finally {
         setLoading(false);
       }
     };
 
-    if (programId) {
-      fetchProgramDetails();
-    }
+    fetchProgramDetails();
   }, [programId]);
 
   const fetchChildren = async () => {
     try {
       setLoadingChildren(true);
-      const response = await axios.get('http://14.225.207.207:8080/api/user/get-student-of-parent');
-      setChildren(response.data || []);
+      // Mock data for children
+      setTimeout(() => {
+        const mockChildren: Student[] = [
+          { id: 1, name: 'Nguyễn Văn A', email: 'student1@example.com' },
+          { id: 2, name: 'Trần Thị B', email: 'student2@example.com' }
+        ];
+        setChildren(mockChildren);
+        setLoadingChildren(false);
+      }, 500);
     } catch (err) {
       console.error('Error fetching children:', err);
       notification.error({
@@ -119,7 +130,6 @@ const SupportProgramDetailScreen: React.FC = () => {
         description: 'Không thể tải danh sách học sinh. Vui lòng thử lại sau.',
         placement: 'topRight',
       });
-    } finally {
       setLoadingChildren(false);
     }
   };
@@ -150,18 +160,8 @@ const SupportProgramDetailScreen: React.FC = () => {
     try {
       setRegistering(true);
       
-      let url = '';
-      if (userRole === 'PARENT' && selectedChildId) {
-        // Parent registering a child
-        url = `http://14.225.207.207:8080/api/program-registration/register-form-parent?programId=${programId}&studentId=${selectedChildId}`;
-      } else {
-        // Student registering themselves
-        url = `http://14.225.207.207:8080/api/program-registration/register-student?programId=${programId}`;
-      }
-      
-      const response = await axios.post<ApiResponse>(url);
-      
-      if (response.data.status.code === 1000) {
+      // Simulate API call
+      setTimeout(() => {
         notification.success({
           message: 'Registration Successful',
           description: `You have successfully registered for ${program?.title}`,
@@ -169,25 +169,38 @@ const SupportProgramDetailScreen: React.FC = () => {
         });
         
         setIsModalOpen(false);
+        setRegistering(false);
+        
+        // Update program to show as registered
+        if (program) {
+          const updatedProgram = {
+            ...program,
+            registrations: [
+              ...program.registrations,
+              {
+                id: Date.now(),
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                registeredAt: new Date().toISOString(),
+                status: "REGISTERED",
+                isDeleted: false
+              }
+            ]
+          };
+          setProgram(updatedProgram);
+        }
         
         // Navigate back to home screen after successful registration
-        navigate('/');
-      } else {
-        notification.error({
-          message: 'Registration Failed',
-          description: response.data.status.message || 'Failed to register for the program.',
-          placement: 'topRight',
-        });
-      }
+        // navigate('/');
+      }, 1000);
       
-    } catch (err: Error | unknown) {
+    } catch (err) {
       console.error('Error registering for program:', err);
       notification.error({
         message: 'Registration Failed',
-        description: err instanceof Error && 'response' in err ? ((err as { response: { data: { status: { message: string } } } }).response.data.status.message) : 'Failed to register for the program. Please try again later.',
+        description: 'Failed to register for the program. Please try again later.',
         placement: 'topRight',
       });
-    } finally {
       setRegistering(false);
     }
   };  
@@ -271,7 +284,7 @@ const SupportProgramDetailScreen: React.FC = () => {
           <Title level={2}>{program.title}</Title>
           <Space>
             <Tag color="blue" icon={<ClockCircleOutlined />}>
-              {program.updatedAt ? program.updatedAt : 'N/A'}
+              {program.updatedAt ? new Date(program.updatedAt).toLocaleDateString() : 'N/A'}
             </Tag>
             <Tag color="purple">
               {program.category}
@@ -284,7 +297,7 @@ const SupportProgramDetailScreen: React.FC = () => {
         <Descriptions title="Program Details" bordered column={{ xs: 1, sm: 2 }}>
           <Descriptions.Item label="Category">{program.category}</Descriptions.Item>
           <Descriptions.Item label="Last Updated">
-            {program.updatedAt ? program.updatedAt : 'N/A'}
+            {program.updatedAt ? new Date(program.updatedAt).toLocaleDateString() : 'N/A'}
           </Descriptions.Item>
           <Descriptions.Item label="Participants">
             <Tag color="green" icon={<UserOutlined />}>

@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Table, Tag, Typography, Spin, Empty, Card, Button, message } from 'antd';
 import { ColumnsType } from 'antd/es/table';
-import axios from 'axios';
 import dayjs from 'dayjs';
 
 const { Title } = Typography;
@@ -35,30 +34,170 @@ const StudentAppointmentHistoryScreen: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Mock data for appointments
+  const mockAppointments: Appointment[] = [
+    {
+      id: 101,
+      appointmentDate: "2023-11-15T00:00:00Z",
+      startTime: "2023-11-15T09:00:00Z",
+      endTime: "2023-11-15T10:00:00Z",
+      status: "COMPLETED",
+      notes: "Tư vấn về vấn đề học tập",
+      report: "Học sinh có tiến bộ trong việc tập trung học tập. Cần tiếp tục theo dõi và hỗ trợ.",
+      createdAt: "2023-11-10T08:30:00Z",
+      updatedAt: "2023-11-15T10:15:00Z",
+      createdBy: {
+        id: 5,
+        fullName: "Lê Thị Hương",
+        email: "huong@example.com",
+        role: "COUNSELOR",
+        phoneNumber: "0123456789",
+        imageUrl: null
+      },
+      updatedBy: {
+        id: 5,
+        fullName: "Lê Thị Hương",
+        email: "huong@example.com",
+        role: "COUNSELOR",
+        phoneNumber: "0123456789",
+        imageUrl: null
+      },
+      isDeleted: false
+    },
+    {
+      id: 102,
+      appointmentDate: "2023-12-05T00:00:00Z",
+      startTime: "2023-12-05T14:00:00Z",
+      endTime: "2023-12-05T15:00:00Z",
+      status: "SCHEDULED",
+      notes: "Theo dõi tiến độ sau buổi tư vấn trước",
+      report: null,
+      createdAt: "2023-12-01T10:45:00Z",
+      updatedAt: "2023-12-01T10:45:00Z",
+      createdBy: {
+        id: 6,
+        fullName: "Nguyễn Văn Minh",
+        email: "minh@example.com",
+        role: "COUNSELOR",
+        phoneNumber: "0987654321",
+        imageUrl: null
+      },
+      updatedBy: {
+        id: 6,
+        fullName: "Nguyễn Văn Minh",
+        email: "minh@example.com",
+        role: "COUNSELOR",
+        phoneNumber: "0987654321",
+        imageUrl: null
+      },
+      isDeleted: false
+    },
+    {
+      id: 103,
+      appointmentDate: "2023-10-20T00:00:00Z",
+      startTime: "2023-10-20T10:30:00Z",
+      endTime: "2023-10-20T11:30:00Z",
+      status: "CANCELLED",
+      notes: "Tư vấn về kỹ năng giao tiếp",
+      report: null,
+      createdAt: "2023-10-15T09:20:00Z",
+      updatedAt: "2023-10-19T16:45:00Z",
+      createdBy: {
+        id: 7,
+        fullName: "Trần Thị Mai",
+        email: "mai@example.com",
+        role: "COUNSELOR",
+        phoneNumber: "0912345678",
+        imageUrl: null
+      },
+      updatedBy: {
+        id: 7,
+        fullName: "Trần Thị Mai",
+        email: "mai@example.com",
+        role: "COUNSELOR",
+        phoneNumber: "0912345678",
+        imageUrl: null
+      },
+      isDeleted: false
+    },
+    {
+      id: 104,
+      appointmentDate: "2023-11-25T00:00:00Z",
+      startTime: "2023-11-25T13:00:00Z",
+      endTime: "2023-11-25T14:00:00Z",
+      status: "PENDING",
+      notes: "Tư vấn về quản lý thời gian",
+      report: null,
+      createdAt: "2023-11-20T11:30:00Z",
+      updatedAt: "2023-11-20T11:30:00Z",
+      createdBy: {
+        id: 8,
+        fullName: "Phạm Văn Đức",
+        email: "duc@example.com",
+        role: "COUNSELOR",
+        phoneNumber: "0923456789",
+        imageUrl: null
+      },
+      updatedBy: {
+        id: 8,
+        fullName: "Phạm Văn Đức",
+        email: "duc@example.com",
+        role: "COUNSELOR",
+        phoneNumber: "0923456789",
+        imageUrl: null
+      },
+      isDeleted: false
+    },
+    {
+      id: 105,
+      appointmentDate: "2023-09-10T00:00:00Z",
+      startTime: "2023-09-10T15:30:00Z",
+      endTime: "2023-09-10T16:30:00Z",
+      status: "COMPLETED",
+      notes: "Tư vấn về áp lực học tập",
+      report: "Học sinh cần được hỗ trợ thêm về kỹ năng quản lý căng thẳng và thiết lập mục tiêu học tập hợp lý.",
+      createdAt: "2023-09-05T14:20:00Z",
+      updatedAt: "2023-09-10T17:00:00Z",
+      createdBy: {
+        id: 5,
+        fullName: "Lê Thị Hương",
+        email: "huong@example.com",
+        role: "COUNSELOR",
+        phoneNumber: "0123456789",
+        imageUrl: null
+      },
+      updatedBy: {
+        id: 5,
+        fullName: "Lê Thị Hương",
+        email: "huong@example.com",
+        role: "COUNSELOR",
+        phoneNumber: "0123456789",
+        imageUrl: null
+      },
+      isDeleted: false
+    }
+  ];
+
   const fetchAppointments = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(
-        'http://14.225.207.207:8080/api/appointment/get-history-booking-from-student',
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        }
-      );
-      setAppointments(response.data);
-      setError(null);
+      // Simulate API call with timeout
+      setTimeout(() => {
+        setAppointments(mockAppointments);
+        setError(null);
+        setLoading(false);
+      }, 1000);
     } catch (err) {
       console.error('Error fetching appointment history:', err);
       setError('Không thể tải lịch sử cuộc hẹn. Vui lòng thử lại sau.');
       message.error('Không thể tải lịch sử cuộc hẹn');
-    } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
     fetchAppointments();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const getStatusColor = (status: string) => {

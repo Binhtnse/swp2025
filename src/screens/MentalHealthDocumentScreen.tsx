@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Typography, Button, Spin, Empty, message, Input, Pagination, Space } from 'antd';
-import { SearchOutlined, DownloadOutlined, FileTextOutlined, EyeOutlined } from '@ant-design/icons';
-import axios from 'axios';
+import { Card, Typography, Button, Spin, Empty, message, Input, Pagination, Space, Tag } from 'antd';
+import { SearchOutlined, DownloadOutlined, FileTextOutlined, EyeOutlined, FireOutlined } from '@ant-design/icons';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -13,6 +12,9 @@ interface Document {
   uploadedAt: string;
   updatedAt: string;
   createdAt: null;
+  imageUrl: string;
+  content: string;
+  category: 1 | 2; // 1: normal, 2: hot doc
 }
 
 const DocumentScreen: React.FC = () => {
@@ -39,43 +41,66 @@ const DocumentScreen: React.FC = () => {
   const fetchDocuments = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('http://14.225.207.207:8080/api/resources/get-all-resource');
-      setDocuments(response.data);
-      setFilteredDocuments(response.data);
+      // Placeholder data instead of API call
+      const placeholderData: Document[] = [
+        {
+          id: 1,
+          title: "Anxiety Management Guide",
+          description: "A comprehensive guide to managing anxiety symptoms with practical exercises and techniques.",
+          filePath: "/documents/anxiety-guide.pdf",
+          uploadedAt: "2023-10-15T08:30:00Z",
+          updatedAt: "2023-11-20T14:45:00Z",
+          createdAt: null,
+          imageUrl: "https://images.unsplash.com/photo-1607962837359-5e7e89f86776?q=80&w=2070",
+          content: "This guide provides detailed information about anxiety management techniques including deep breathing, progressive muscle relaxation, and cognitive restructuring.",
+          category: 2 // hot document
+        },
+        {
+          id: 2,
+          title: "Depression Self-Care Workbook",
+          description: "Interactive workbook with exercises to help manage depression symptoms and improve daily functioning.",
+          filePath: "/documents/depression-workbook.pdf",
+          uploadedAt: "2023-09-05T10:15:00Z",
+          updatedAt: "2023-10-30T09:20:00Z",
+          createdAt: null,
+          imageUrl: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=2076",
+          content: "This workbook contains journaling prompts, mood tracking tools, and cognitive behavioral therapy exercises designed for those experiencing depression.",
+          category: 1 // normal document
+        }
+      ];
+      
+      // Simulate network delay
+      setTimeout(() => {
+        setDocuments(placeholderData);
+        setFilteredDocuments(placeholderData);
+        setLoading(false);
+      }, 1000);
     } catch (error) {
       console.error('Error fetching documents:', error);
       message.error('Failed to load documents. Please try again later.');
-    } finally {
       setLoading(false);
     }
   };
 
-  const handleDownload = (filePath: string, title: string) => {
-    const baseUrl = 'http://14.225.207.207:8080';
-    const fullUrl = `${baseUrl}${filePath}`;
-    
-    message.info(`Downloading ${title}...`);
-    
-    // Create an anchor element and trigger download
-    const link = document.createElement('a');
-    link.href = fullUrl;
-    link.download = title;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handleDownload = (_filePath: string, title: string) => {
+    // Simulate download
+    message.success(`Downloaded ${title} successfully!`);
   };
 
-  const handleView = (filePath: string) => {
-    const baseUrl = 'http://14.225.207.207:8080';
-    const fullUrl = `${baseUrl}${filePath}`;
-    
-    // Open the document in a new window
-    window.open(fullUrl, '_blank', 'noopener,noreferrer');
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const handleView = (_filePath: string) => {
+    // Simulate view
+    message.info('Opening document in new tab (simulated)');
   };
 
   const formatDate = (dateString: string) => {
     if (!dateString) return 'N/A';
-    return dateString;
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric' 
+    });
   };
 
   const paginatedDocuments = filteredDocuments.slice(
@@ -123,13 +148,31 @@ const DocumentScreen: React.FC = () => {
                   hoverable
                   className="h-full flex flex-col"
                   cover={
-                    <div className="h-40 bg-blue-50 flex items-center justify-center">
-                      <FileTextOutlined style={{ fontSize: 64, color: '#1890ff' }} />
+                    <div className="h-40 bg-blue-50 flex items-center justify-center relative overflow-hidden">
+                      {doc.imageUrl ? (
+                        <img 
+                          src={doc.imageUrl} 
+                          alt={doc.title} 
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <FileTextOutlined style={{ fontSize: 64, color: '#1890ff' }} />
+                      )}
+                      {doc.category === 2 && (
+                        <div className="absolute top-2 right-2">
+                          <Tag color="red" icon={<FireOutlined />}>Hot</Tag>
+                        </div>
+                      )}
                     </div>
                   }
                 >
                   <div className="flex-grow">
-                    <Title level={4} className="mb-2">{doc.title}</Title>
+                    <Title level={4} className="mb-2">
+                      {doc.title}
+                      {doc.category === 2 && (
+                        <FireOutlined style={{ color: 'red', marginLeft: '8px' }} />
+                      )}
+                    </Title>
                     <Paragraph 
                       ellipsis={{ rows: 3 }}
                       className="text-gray-600 mb-4"
