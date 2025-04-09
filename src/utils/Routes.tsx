@@ -10,9 +10,17 @@ import BlogDetailScreen from "../screens/BlogDetailScreen";
 import SurveyScreen from "../screens/SurveyScreen";
 import SurveyDetailScreen from "../screens/SurveyDetailScreen";
 import SupportProgramDetailScreen from "../screens/SupportProgramDetailScreen";
+import AdminBlogScreen from "../screens/AdminBlogScreen";
+import AdminMentalHealthDocumentScreen from "../screens/AdminMentalHealthDocumentScreen";
+import AdminPsychologistScreen from "../screens/AdminPsychologistScreen";
+import AdminSurveyListScreen from "../screens/AdminSurveyListScreen";
+import AdminSupportProgramScreen from "../screens/AdminSupportProgramScreen";
+import AdminUserListScreen from "../screens/AdminUserListScreen";
+import AdminDashboardScreen from "../screens/AdminDashboardScreen";
 
 const Layout = lazy(() => import("../components/MainLayout"));
 const ProtectedRoute = lazy(() => import("../utils/ProtectedRoutes"));
+const AdminLayout = lazy(() => import("../components/AdminLayout"));
 
 export const AppRoutes = createBrowserRouter([
   {
@@ -103,6 +111,76 @@ export const AppRoutes = createBrowserRouter([
           <BlogDetailScreen />
         </ProtectedRoute>
       </Layout>
+    ),
+  },
+  {
+    path: "/admin/dashboard",
+    element: (
+      <AdminLayout>
+        <ProtectedRoute allowedRoles={["GUEST"]}>
+          <AdminDashboardScreen />
+        </ProtectedRoute>
+      </AdminLayout>
+    ),
+  },
+  {
+    path: "/admin/users",
+    element: (
+      <AdminLayout>
+        <ProtectedRoute allowedRoles={["GUEST"]}>
+          <AdminUserListScreen />
+        </ProtectedRoute>
+      </AdminLayout>
+    ),
+  },
+  {
+    path: "/admin/psychologists",
+    element: (
+      <AdminLayout>
+        <ProtectedRoute allowedRoles={["GUEST"]}>
+          <AdminPsychologistScreen />
+        </ProtectedRoute>
+      </AdminLayout>
+    ),
+  },
+  {
+    path: "/admin/surveys",
+    element: (
+      <AdminLayout>
+        <ProtectedRoute allowedRoles={["GUEST"]}>
+          <AdminSurveyListScreen />
+        </ProtectedRoute>
+      </AdminLayout>
+    ),
+  },
+  {
+    path: "/admin/support-programs",
+    element: (
+      <AdminLayout>
+        <ProtectedRoute allowedRoles={["GUEST"]}>
+          <AdminSupportProgramScreen />
+        </ProtectedRoute>
+      </AdminLayout>
+    ),
+  },
+  {
+    path: "/admin/resources/blogs",
+    element: (
+      <AdminLayout>
+        <ProtectedRoute allowedRoles={["GUEST"]}>
+          <AdminBlogScreen />
+        </ProtectedRoute>
+      </AdminLayout>
+    ),
+  },
+  {
+    path: "/admin/resources/documents",
+    element: (
+      <AdminLayout>
+        <ProtectedRoute allowedRoles={["GUEST"]}>
+          <AdminMentalHealthDocumentScreen />
+        </ProtectedRoute>
+      </AdminLayout>
     ),
   },
   {
